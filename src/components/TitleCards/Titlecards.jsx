@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./TitleCards.css";
-import cards_data from "../../assets/cards/Cards_data";
+import { Link } from "react-router-dom";
 
 const TitleCards = ({ title, category }) => {
   const [apiData, setApiData] = useState([]);
-  const cardsRef = useRef();
+  const cardsRef = useRef(null);
+
   const options = {
     method: "GET",
     headers: {
@@ -25,24 +26,32 @@ const TitleCards = ({ title, category }) => {
       options
     )
       .then((res) => res.json())
-      .then((res) => setApiData(res.results))
+      .then((res) => setApiData(res.results || []))
       .catch((err) => console.error(err));
 
-    cardsRef.current.addEventListener("wheel", handleWheel);
-  }, []);
+    const cards = cardsRef.current;
+    cards.addEventListener("wheel", handleWheel);
+
+    return () => {
+      cards.removeEventListener("wheel", handleWheel);
+    };
+  }, [category]);
 
   return (
     <div className="title-cards">
       <h2>{title || "Popular on Netflix"}</h2>
+
       <div className="card-list" ref={cardsRef}>
-        {apiData.map((card, index) => (
-          <div className="card" key={index}>
-            <img
-              src={`https://image.tmdb.org/t/p/w500` + card.backdrop_path}
-              alt=""
-            />
+        {apiData.map((card) => (
+          <Link to={`/player/${card.id}`} className="card" key={card.id}>
+            {card.backdrop_path && (
+              <img
+                src={`https://image.tmdb.org/t/p/w500${card.backdrop_path}`}
+                alt={card.original_title}
+              />
+            )}
             <p>{card.original_title}</p>
-          </div>
+          </Link>
         ))}
       </div>
     </div>
