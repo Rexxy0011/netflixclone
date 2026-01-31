@@ -1,29 +1,32 @@
 import React, { useEffect } from "react";
-import Home from "./ pages/Home/Home";
+import Home from "./pages/Home/Home";
 import { Routes, Route, useNavigate } from "react-router-dom";
-import Login from "./ pages/Login/Login";
-import Player from "./ pages/Player/Player";
+import Login from "./pages/Login/Login";
+import Player from "./pages/Player/Player";
 import { onAuthStateChanged } from "firebase/auth";
-
 import { auth } from "./firebase";
-
-import { Toaster } from "react-hot-toast";
+import { Toaster, toast } from "react-hot-toast";
 
 const App = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
+    // Listen for auth state changes
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         console.log("user logged in");
-
+        toast.success("Welcome back!");
         navigate("/");
       } else {
         console.log("user logged out");
+        toast("You are logged out");
         navigate("/login");
       }
     });
-  }, []);
+
+    // Cleanup listener on unmount
+    return () => unsubscribe();
+  }, [navigate]);
 
   return (
     <div>
